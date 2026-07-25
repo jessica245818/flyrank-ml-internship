@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="A time-aware content opportunity scoring study on the FlyRank ML Internship dataset.">
+  <title>Predicting content-decline risk | Jessica George</title>
+  <style>
+    :root{--ink:#152238;--muted:#5f6b7a;--paper:#fffdf8;--navy:#102a43;--blue:#2563eb;--green:#16864b;--amber:#e99518;--line:#dbe3ec}
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;background:#eef2f6;color:var(--ink);font:17px/1.7 Georgia,serif}
+    a{color:#1756b3} header{background:linear-gradient(130deg,#0b1f36,#173e66);color:white;padding:5rem 1.4rem 4rem}
+    .wrap{max-width:1000px;margin:auto}.eyebrow{font:700 .78rem/1.2 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#9dc3ff}
+    h1{font-size:clamp(2.5rem,6vw,5.2rem);line-height:1.02;max-width:900px;margin:.55rem 0 1rem;letter-spacing:-.04em}
+    .dek{max-width:730px;font-size:1.28rem;color:#dbeafe}.meta{font:600 .9rem system-ui;color:#b8cbe1;margin-top:1.7rem}
+    nav{position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid var(--line);overflow:auto;white-space:nowrap;padding:.75rem calc((100% - 1000px)/2)}
+    nav a{font:650 .82rem system-ui;text-decoration:none;color:#34495e;margin:0 .65rem}
+    main{max-width:1000px;margin:auto;background:var(--paper);padding:3.4rem clamp(1.25rem,5vw,5rem);box-shadow:0 20px 70px #19324f18}
+    section{padding:1rem 0 3rem;border-bottom:1px solid var(--line)}section:last-child{border:0}
+    h2{font:750 clamp(1.65rem,3vw,2.4rem)/1.15 system-ui;color:var(--navy);letter-spacing:-.025em;margin-top:1.8rem}
+    h3{font:700 1.05rem system-ui}.abstract{font-size:1.15rem;border-left:5px solid var(--blue);padding-left:1.4rem}
+    .callout{background:#edf6ff;border-radius:12px;padding:1.2rem 1.35rem;margin:1.4rem 0}
+    .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+    .metric{border:1px solid var(--line);border-radius:12px;padding:1.2rem;background:#fff}.metric b{display:block;font:800 2rem system-ui;color:var(--green)}.metric span{font:650 .78rem system-ui;text-transform:uppercase;color:var(--muted)}
+    table{border-collapse:collapse;width:100%;font-family:system-ui;font-size:.9rem;display:block;overflow:auto}th,td{padding:.7rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--muted);font-size:.75rem;text-transform:uppercase}
+    figure{margin:2rem 0}figure img{width:100%;background:white;border:1px solid var(--line);border-radius:12px;padding:.5rem}figcaption{color:var(--muted);font-size:.88rem}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}.card{border:1px solid var(--line);border-radius:12px;padding:1.2rem;background:#fff}
+    code{background:#e9eef5;padding:.12rem .35rem;border-radius:4px}footer{max-width:1000px;margin:0 auto;padding:2rem;color:var(--muted);font:14px system-ui}
+    @media(max-width:700px){.metric-grid,.two{grid-template-columns:1fr}header{padding-top:3rem}nav{padding-left:.4rem}}
+  </style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="eyebrow">FlyRank ML Internship · Capstone research paper</div>
+  <h1>Predicting content-decline risk for a human review queue</h1>
+  <p class="dek">A public-safe, time-aware test of whether five early-month search signals can help content teams decide what to inspect first.</p>
+  <p class="meta">Jessica George · Refresh / Content Opportunity Scoring · July 2026</p>
+</div></header>
+<nav>
+  <a href="#abstract">Abstract</a><a href="#problem">Problem</a><a href="#data">Data</a><a href="#method">Method</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="#actions">Actions</a><a href="#repro">Reproducibility</a>
+</nav>
+<main>
+  <section id="abstract">
+    <h2>Abstract</h2>
+    <p class="abstract">This study asks whether safe search-performance signals available by mid-month can rank content items at risk of a later decline in impressions. I aggregate one row per pseudonymized content item, define the outcome only from the later window, and compare a random forest with a transparent weighted rule. Development uses March 2026, while June 2026 remains a sealed temporal test. On the same June rows, the model improves ROC-AUC from 0.542 to 0.573 and average precision from 0.538 to 0.588, with top-50 precision moving from 0.80 to 0.82. The result supports a human review queue with reason codes; it does not prove causality or justify automated content changes.</p>
+  </section>
+  <section id="problem">
+    <h2>Introduction / problem statement</h2>
+    <p>Content teams have more pages than they can inspect carefully. The operational decision is: <strong>which content items deserve scarce review time first?</strong> A useful system should produce a ranked queue, explain why an item surfaced, and leave the final action to a person.</p>
+    <div class="callout"><strong>Cost of a wrong call.</strong> A false positive wastes review time and may invite an unnecessary edit. A false negative may delay attention to a genuine decline. The score therefore prioritizes investigation—not rewriting, merging, pruning, or deleting automatically.</div>
+  </section>
+  <section id="data">
+    <h2>Data</h2>
+    <p>The analysis uses <code>flyrank_pseudonymized_warehouse_release_v20260703</code>, specifically <code>fact_content_daily_performance</code>. One row in the model frame represents one pseudonymized content item. Days 1–15 form the feature window; days 16–month end form the outcome window.</p>
+    <div class="two">
+      <div class="card"><h3>Development</h3><p><strong>March 1–31, 2026</strong><br>77,540 content items<br>38 pseudonymous clients</p></div>
+      <div class="card"><h3>Sealed temporal test</h3><p><strong>June 1–30, 2026</strong><br>79,564 content items<br>45 pseudonymous clients</p></div>
+    </div>
+    <p>Items require GSC availability and at least 100 early-window impressions. Client identity is not a feature. I exclude URLs, queries, product flags, GA4 outcomes, post-decision variables, raw exports, and every field derived from the label.</p>
+  </section>
+  <section id="method">
+    <h2>Methodology</h2>
+    <p>The target equals 1 when average daily impressions after day 15 fall below 80% of average daily impressions during days 1–15. This is an operational proxy for decline, not a statement about content quality.</p>
+    <p>The five features—each knowable at the decision moment—are early-window impressions, clicks, CTR, average position, and active days. The transparent baseline combines visibility, position opportunity, activity, and CTR gap. The learned model is a regularized random forest (300 trees, depth 8, minimum leaf 50, balanced classes, seed 42).</p>
+    <div class="callout"><strong>Validation and leakage.</strong> The model learns only from March and is evaluated once on June. Baseline and model use identical June rows and metrics. Outcome-window fields, label-derived columns, and operational flags are barred from the feature set.</div>
+  </section>
+  <section id="results">
+    <h2>Results</h2>
+    <div class="metric-grid">
+      <div class="metric"><span>ROC-AUC lift</span><b>+.032</b>0.542 → 0.573</div>
+      <div class="metric"><span>Average precision lift</span><b>+.050</b>0.538 → 0.588</div>
+      <div class="metric"><span>Top-50 precision</span><b>0.82</b>41 observed declines</div>
+    </div>
+    <table><thead><tr><th>Method</th><th>ROC-AUC</th><th>Average precision</th><th>Precision@50</th></tr></thead>
+      <tbody><tr><td>Transparent baseline</td><td>0.542</td><td>0.538</td><td>0.80</td></tr><tr><td>Random forest</td><td>0.573</td><td>0.588</td><td>0.82</td></tr></tbody></table>
+    <figure><img src="assets/capstone_precision.svg" alt="Bar chart comparing precision at 50 for baseline and random forest"><figcaption>Both methods are measured on the same sealed June test rows. The learned model adds one correctly surfaced decline in the first 50 reviews.</figcaption></figure>
+    <figure><img src="assets/capstone_importance.svg" alt="Horizontal bars showing feature importance"><figcaption>Model importance describes how this fitted model split the data. It is not causal evidence about search ranking systems.</figcaption></figure>
+  </section>
+  <section id="limits">
+    <h2>Limitations &amp; honest framing</h2>
+    <p>This is observational decision support. It cannot show that any feature causes visibility, that a refresh will recover impressions, or that Google uses these variables as ranking factors. The proxy is sensitive to seasonality, demand shifts, measurement noise, and its within-month horizon. June also contains a different client mix from March. A person must inspect intent, quality, business context, and recent edits before acting.</p>
+  </section>
+  <section id="actions">
+    <h2>Ranked recommendations</h2>
+    <p>The deployed queue uses only pseudonymous content IDs. The first ten items are shown below; the reproducible output contains the top 50.</p>
+    <table><thead><tr><th>Rank</th><th>Pseudonymous content</th><th>Score</th><th>Suggested action</th></tr></thead><tbody>
+      <tr><td>1</td><td>content_9b76202a02885037</td><td>0.890</td><td>Review for refresh or protection</td></tr>
+      <tr><td>2</td><td>content_86c96002dd5c69aa</td><td>0.888</td><td>Review for refresh or protection</td></tr>
+      <tr><td>3</td><td>content_ba98b9ba325cb149</td><td>0.888</td><td>Review for refresh or protection</td></tr>
+      <tr><td>4</td><td>content_0aaa197051f58d6f</td><td>0.875</td><td>Monitor position and assess demand</td></tr>
+      <tr><td>5</td><td>content_8c16bdac48bf7b56</td><td>0.868</td><td>Review for refresh or protection</td></tr>
+      <tr><td>6</td><td>content_04cb6b15919bf391</td><td>0.867</td><td>Review for refresh or protection</td></tr>
+      <tr><td>7</td><td>content_0a9b787d28fc695c</td><td>0.865</td><td>Review for refresh or protection</td></tr>
+      <tr><td>8</td><td>content_d402fbbfb15ddfc8</td><td>0.863</td><td>Review for refresh or protection</td></tr>
+      <tr><td>9</td><td>content_1b829171cdff7636</td><td>0.859</td><td>Review for refresh or protection</td></tr>
+      <tr><td>10</td><td>content_3ecbd0e3911c0a35</td><td>0.856</td><td>Review for refresh or protection</td></tr>
+    </tbody></table>
+    <figure><img src="assets/capstone_actions.svg" alt="Action distribution across the top 50 review candidates"><figcaption>Reason codes translate scores into review prompts. No action is automatic.</figcaption></figure>
+  </section>
+  <section id="repro">
+    <h2>Reproducibility</h2>
+    <p>The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb">executed capstone notebook</a> contains the narrative, tables, and figures. The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/capstone_analysis.py">analysis script</a> reads the two monthly partitions with DuckDB over <code>hf://</code>, builds the five-feature frames, trains both approaches, computes metrics, and regenerates the public-safe artifacts. See the <a href="https://github.com/jessica245818/flyrank-ml-internship">full repository</a> for the data contract and earlier framing notebooks.</p>
+  </section>
+  <section>
+    <h2>Acknowledgments &amp; data credit</h2>
+    <p>Built on the <a href="https://flyrank.ai/">FlyRank ML Internship dataset</a>. Thanks to the FlyRank internship team for the pseudonymized warehouse release and learning materials.</p>
+  </section>
+</main>
+<footer>Research paper and reproducible analysis by Jessica George · Public-safe release, July 2026</footer>
+</body>
+</html>

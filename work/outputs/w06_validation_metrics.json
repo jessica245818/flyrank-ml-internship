@@ -1,0 +1,58 @@
+{
+  "lane": "Refresh / Content Opportunity Scoring",
+  "random_seed": 42,
+  "before_random_split": {
+    "test_rows": 2683,
+    "test_base_rate": 0.6354826686544912,
+    "precision_at_10": 1.0,
+    "precision_at_50": 0.94,
+    "precision_at_100": 0.9,
+    "roc_auc": 0.6975082309339187,
+    "average_precision": 0.7886950158936961
+  },
+  "before_client_overlap": 25,
+  "after_grouped_split": {
+    "test_rows": 1701,
+    "test_base_rate": 0.5543797766019988,
+    "precision_at_10": 1.0,
+    "precision_at_50": 0.78,
+    "precision_at_100": 0.8,
+    "roc_auc": 0.6386175597444858,
+    "average_precision": 0.680281912676796
+  },
+  "after_client_overlap": 0,
+  "leaky_trend_pct_test": {
+    "test_rows": 1701,
+    "test_base_rate": 0.5543797766019988,
+    "precision_at_10": 1.0,
+    "precision_at_50": 1.0,
+    "precision_at_100": 1.0,
+    "roc_auc": 1.0,
+    "average_precision": 1.0
+  },
+  "honest_feature_columns": [
+    "search_volume",
+    "competition",
+    "cpc",
+    "word_count",
+    "content_age_days",
+    "days_since_last_update",
+    "impressions_90d",
+    "clicks_90d",
+    "sessions_90d",
+    "days_with_impressions",
+    "days_with_sessions",
+    "ctr",
+    "avg_position",
+    "engagement_rate",
+    "content_type",
+    "main_intent",
+    "competition_level",
+    "freshness_tier"
+  ],
+  "forbidden_feature_overlap": [],
+  "error_example_count": 3,
+  "sklearn_version": "1.6.1",
+  "claim_scope": "observed, measured, directional, decision-support",
+  "timeline_limitation": "Starter 90-day aggregates overlap the 30d-vs-prev30d proxy; this is not a future-window test."
+}

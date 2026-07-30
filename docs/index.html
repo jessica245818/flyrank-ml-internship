@@ -9,7 +9,10 @@
     :root{--ink:#152238;--muted:#5f6b7a;--paper:#fffdf8;--navy:#102a43;--blue:#2563eb;--green:#16864b;--amber:#e99518;--line:#dbe3ec}
     *{box-sizing:border-box} html{scroll-behavior:smooth}
     body{margin:0;background:#eef2f6;color:var(--ink);font:17px/1.7 Georgia,serif}
-    a{color:#1756b3} header{background:linear-gradient(130deg,#0b1f36,#173e66);color:white;padding:5rem 1.4rem 4rem}
+    a{color:#1756b3} a:focus-visible{outline:3px solid #f2a900;outline-offset:3px}
+    .skip-link{position:absolute;left:-9999px;top:.6rem;background:white;color:var(--navy);padding:.65rem 1rem;z-index:5;font:700 .9rem system-ui}
+    .skip-link:focus{left:.6rem}
+    header{background:linear-gradient(130deg,#0b1f36,#173e66);color:white;padding:5rem 1.4rem 4rem}
     .wrap{max-width:1000px;margin:auto}.eyebrow{font:700 .78rem/1.2 system-ui;letter-spacing:.14em;text-transform:uppercase;color:#9dc3ff}
     h1{font-size:clamp(2.5rem,6vw,5.2rem);line-height:1.02;max-width:900px;margin:.55rem 0 1rem;letter-spacing:-.04em}
     .dek{max-width:730px;font-size:1.28rem;color:#dbeafe}.meta{font:600 .9rem system-ui;color:#b8cbe1;margin-top:1.7rem}
@@ -25,21 +28,24 @@
     table{border-collapse:collapse;width:100%;font-family:system-ui;font-size:.9rem;display:block;overflow:auto}th,td{padding:.7rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}th{color:var(--muted);font-size:.75rem;text-transform:uppercase}
     figure{margin:2rem 0}figure img{width:100%;background:white;border:1px solid var(--line);border-radius:12px;padding:.5rem}figcaption{color:var(--muted);font-size:.88rem}
     .two{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}.card{border:1px solid var(--line);border-radius:12px;padding:1.2rem;background:#fff}
+    .tag{display:inline-block;border:1px solid #b8cbe1;border-radius:999px;padding:.12rem .55rem;margin:.15rem .2rem .15rem 0;font:650 .75rem system-ui;background:#f8fbff}
+    .small{font-size:.9rem;color:var(--muted)}
     code{background:#e9eef5;padding:.12rem .35rem;border-radius:4px}footer{max-width:1000px;margin:0 auto;padding:2rem;color:var(--muted);font:14px system-ui}
     @media(max-width:700px){.metric-grid,.two{grid-template-columns:1fr}header{padding-top:3rem}nav{padding-left:.4rem}}
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to paper</a>
 <header><div class="wrap">
   <div class="eyebrow">FlyRank ML Internship · Capstone research paper</div>
   <h1>Predicting content-decline risk for a human review queue</h1>
   <p class="dek">A public-safe, time-aware test of whether five early-month search signals can help content teams decide what to inspect first.</p>
   <p class="meta">Jessica George · Refresh / Content Opportunity Scoring · July 2026</p>
 </div></header>
-<nav>
+<nav aria-label="Paper sections">
   <a href="#abstract">Abstract</a><a href="#problem">Problem</a><a href="#data">Data</a><a href="#method">Method</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="#actions">Actions</a><a href="#repro">Reproducibility</a>
 </nav>
-<main>
+<main id="main-content">
   <section id="abstract">
     <h2>Abstract</h2>
     <p class="abstract">This study asks whether safe search-performance signals available by mid-month can rank content items at risk of a later decline in impressions. I aggregate one row per pseudonymized content item, define the outcome only from the later window, and compare a random forest with a transparent weighted rule. Development uses March 2026, while June 2026 remains a sealed temporal test. On the same June rows, the model improves ROC-AUC from 0.542 to 0.573 and average precision from 0.538 to 0.588, with top-50 precision moving from 0.80 to 0.82. The result supports a human review queue with reason codes; it does not prove causality or justify automated content changes.</p>
@@ -51,12 +57,13 @@
   </section>
   <section id="data">
     <h2>Data</h2>
-    <p>The analysis uses <code>flyrank_pseudonymized_warehouse_release_v20260703</code>, specifically <code>fact_content_daily_performance</code>. One row in the model frame represents one pseudonymized content item. Days 1–15 form the feature window; days 16–month end form the outcome window.</p>
+    <p>The analysis uses the public-safe <code>flyrank_pseudonymized_warehouse_release_v20260703</code>. Its daily performance fact contains <strong>78,835,655 rows</strong> spanning 27 January 2025 through 30 June 2026; this study reads only the March and June 2026 partitions of <code>fact_content_daily_performance</code>. One row in each model frame represents one pseudonymized content item after aggregation. Days 1–15 form the feature window; days 16–month end form the outcome window.</p>
     <div class="two">
       <div class="card"><h3>Development</h3><p><strong>March 1–31, 2026</strong><br>77,540 content items<br>38 pseudonymous clients</p></div>
       <div class="card"><h3>Sealed temporal test</h3><p><strong>June 1–30, 2026</strong><br>79,564 content items<br>45 pseudonymous clients</p></div>
     </div>
-    <p>Items require GSC availability and at least 100 early-window impressions. Client identity is not a feature. I exclude URLs, queries, product flags, GA4 outcomes, post-decision variables, raw exports, and every field derived from the label.</p>
+    <p>Items require <code>gsc_data_available IS TRUE</code> and at least 100 early-window impressions. Client identity is retained only to count pseudonymous clients, never as a feature. I exclude URLs, queries, product flags, GA4 outcomes, post-decision variables, raw exports, and every field derived from the label because they are unnecessary for the decision, unavailable at scoring time, unsafe to publish, or leakage risks.</p>
+    <p class="small"><strong>Data access:</strong> the gated warehouse release is hosted on Hugging Face. The repository stores code and aggregate/pseudonymous receipts, not the underlying production-derived tables.</p>
   </section>
   <section id="method">
     <h2>Methodology</h2>
@@ -71,10 +78,14 @@
       <div class="metric"><span>Average precision lift</span><b>+.050</b>0.538 → 0.588</div>
       <div class="metric"><span>Top-50 precision</span><b>0.82</b>41 observed declines</div>
     </div>
+    <p><strong>Observed test base rate:</strong> 0.520. Every result below uses the same 79,564 June rows; no method receives a different test population.</p>
     <table><thead><tr><th>Method</th><th>ROC-AUC</th><th>Average precision</th><th>Precision@50</th></tr></thead>
       <tbody><tr><td>Transparent baseline</td><td>0.542</td><td>0.538</td><td>0.80</td></tr><tr><td>Random forest</td><td>0.573</td><td>0.588</td><td>0.82</td></tr></tbody></table>
-    <figure><img src="assets/capstone_precision.svg" alt="Bar chart comparing precision at 50 for baseline and random forest"><figcaption>Both methods are measured on the same sealed June test rows. The learned model adds one correctly surfaced decline in the first 50 reviews.</figcaption></figure>
-    <figure><img src="assets/capstone_importance.svg" alt="Horizontal bars showing feature importance"><figcaption>Model importance describes how this fitted model split the data. It is not causal evidence about search ranking systems.</figcaption></figure>
+    <figure><img src="assets/capstone_precision.svg" alt="A bar chart showing sealed-test Precision at 50 increased from 0.80 for the transparent baseline to 0.82 for the random forest."><figcaption><strong>Figure 1: The model adds one observed decline to the first 50 reviews.</strong> Both methods are measured on the same sealed June test rows. Source: FlyRank ML Internship warehouse release v20260703.</figcaption></figure>
+    <figure><img src="assets/capstone_importance.svg" alt="A horizontal bar chart showing active days had the largest fitted-model importance, followed by CTR, average position, clicks, and impressions."><figcaption><strong>Figure 2: Active days contributed most to this fitted model's splits.</strong> Importance describes model behavior, not causal evidence about search ranking systems. Source: FlyRank ML Internship warehouse release v20260703.</figcaption></figure>
+    <table aria-label="Random forest feature importance"><thead><tr><th>Pre-decision feature</th><th>Impurity importance</th></tr></thead><tbody>
+      <tr><td>Active days</td><td>0.394</td></tr><tr><td>CTR</td><td>0.224</td></tr><tr><td>Average position</td><td>0.165</td></tr><tr><td>Clicks</td><td>0.109</td></tr><tr><td>Impressions</td><td>0.109</td></tr>
+    </tbody></table>
   </section>
   <section id="limits">
     <h2>Limitations &amp; honest framing</h2>
@@ -82,7 +93,11 @@
   </section>
   <section id="actions">
     <h2>Ranked recommendations</h2>
-    <p>The deployed queue uses only pseudonymous content IDs. The first ten items are shown below; the reproducible output contains the top 50.</p>
+    <p>The deployed queue uses only pseudonymous content IDs. The first ten items are shown below; the reproducible output contains the top 50. A score sets review order—it is not a calibrated probability or estimated lift.</p>
+    <div class="two">
+      <div class="card"><h3>Protect or refresh</h3><p><span class="tag">high_recent_visibility</span> <span class="tag">persistent_observation</span></p><p>Check current accuracy, intent, prior visibility, and business value; refresh only a confirmed gap.</p></div>
+      <div class="card"><h3>Diagnose demand or position</h3><p><span class="tag">weak_position_context</span></p><p>Separate content problems from weak demand, query mix, seasonality, and discoverability before editing.</p></div>
+    </div>
     <table><thead><tr><th>Rank</th><th>Pseudonymous content</th><th>Score</th><th>Suggested action</th></tr></thead><tbody>
       <tr><td>1</td><td>content_9b76202a02885037</td><td>0.890</td><td>Review for refresh or protection</td></tr>
       <tr><td>2</td><td>content_86c96002dd5c69aa</td><td>0.888</td><td>Review for refresh or protection</td></tr>
@@ -95,11 +110,18 @@
       <tr><td>9</td><td>content_1b829171cdff7636</td><td>0.859</td><td>Review for refresh or protection</td></tr>
       <tr><td>10</td><td>content_3ecbd0e3911c0a35</td><td>0.856</td><td>Review for refresh or protection</td></tr>
     </tbody></table>
-    <figure><img src="assets/capstone_actions.svg" alt="Action distribution across the top 50 review candidates"><figcaption>Reason codes translate scores into review prompts. No action is automatic.</figcaption></figure>
+    <figure><img src="assets/capstone_actions.svg" alt="A horizontal bar chart showing most top-50 candidates were assigned refresh-or-protection review, with a smaller monitoring group."><figcaption><strong>Figure 3: Most top-50 candidates require refresh-or-protection review.</strong> Reason codes translate scores into prompts. No action is automatic. Source: FlyRank ML Internship warehouse release v20260703.</figcaption></figure>
+    <div class="callout"><strong>Human-review rule.</strong> Before acting, inspect the live page, query and SERP context, seasonality, recent edits, overlap with other pages, business value, and measurement plan. <strong>Never automate</strong> publishing, rewriting, deleting, pruning, merging, redirects, canonical/indexing changes, or sensitive-content decisions from this queue.</div>
   </section>
   <section id="repro">
     <h2>Reproducibility</h2>
-    <p>The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb">executed capstone notebook</a> contains the narrative, tables, and figures. The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/capstone_analysis.py">analysis script</a> reads the two monthly partitions with DuckDB over <code>hf://</code>, builds the five-feature frames, trains both approaches, computes metrics, and regenerates the public-safe artifacts. See the <a href="https://github.com/jessica245818/flyrank-ml-internship">full repository</a> for the data contract and earlier framing notebooks.</p>
+    <h3>Code and run order</h3>
+    <p>The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/capstone.ipynb">executed capstone notebook</a> contains the narrative, tables, and figures. The <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/capstone_analysis.py">analysis script</a> reads the two monthly partitions with DuckDB over <code>hf://</code>, builds the five-feature frames, trains both approaches, computes metrics, and regenerates the public-safe artifacts. It uses a fixed random seed of 42. Run the analysis script with a Hugging Face READ token, then run the capstone notebook; the notebook can be rerun from the committed aggregate receipt without exposing credentials.</p>
+    <p><a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/w03_data_contract.ipynb">Data contract</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/w04_baseline_score.ipynb">Baseline</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/w05_model.ipynb">Model</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/w06_validation_audit.ipynb">Validation audit</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/notebooks/w07_action_playbook.ipynb">Action playbook</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship/blob/main/work/outputs/capstone_results.json">Metrics receipt</a> · <a href="https://github.com/jessica245818/flyrank-ml-internship">Full repository</a></p>
+    <h3>Data availability</h3>
+    <p>The source warehouse is gated to protect public-safe usage. Access conditions are documented in the repository; raw tables are not redistributed. The minimum evidence needed to inspect the published claims—query logic, feature definitions, pseudonymous recommendations, metrics, and charts—is committed.</p>
+    <h3>Reporting and page design</h3>
+    <p class="small">The publication structure follows transparent methods and availability guidance from <a href="https://www.nature.com/npjai/for-authors-and-referees/about/editorial-policies/reporting-standards">Nature Portfolio</a>. Chart alternatives and takeaway-first captions follow <a href="https://service-manual.ons.gov.uk/data-visualisation/guidance/chart-text">ONS chart-text guidance</a>; responsive layout, contrast, focus, headings, and image alternatives follow <a href="https://www.w3.org/WAI/tips/designing/">W3C WAI guidance</a>.</p>
   </section>
   <section>
     <h2>Acknowledgments &amp; data credit</h2>

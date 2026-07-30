@@ -48,11 +48,12 @@
 <main id="main-content">
   <section id="abstract">
     <h2>Abstract</h2>
-    <p class="abstract">This study asks whether safe search-performance signals available by mid-month can rank content items at risk of a later decline in impressions. I aggregate one row per pseudonymized content item, define the outcome only from the later window, and compare a random forest with a transparent weighted rule. Development uses March 2026, while June 2026 remains a sealed temporal test. On the same June rows, the model improves ROC-AUC from 0.542 to 0.573 and average precision from 0.538 to 0.588, with top-50 precision moving from 0.80 to 0.82. The result supports a human review queue with reason codes; it does not prove causality or justify automated content changes.</p>
+    <p class="abstract">This study asks whether safe search-performance signals available by mid-month can help FlyRank content teams decide which content items to review first when attention is limited. I aggregate one row per pseudonymized content item, define the outcome only from the later window, and compare a random forest with a transparent weighted rule. Development uses March 2026, while June 2026 remains a sealed temporal test. On the same June rows, the model improves ROC-AUC from 0.542 to 0.573 and average precision from 0.538 to 0.588, with top-50 precision moving from 0.80 to 0.82. The measured lift supports a human review queue with reason codes; it does not prove causality or justify automated content changes.</p>
   </section>
   <section id="problem">
     <h2>Introduction / problem statement</h2>
-    <p>Content teams have more pages than they can inspect carefully. The operational decision is: <strong>which content items deserve scarce review time first?</strong> A useful system should produce a ranked queue, explain why an item surfaced, and leave the final action to a person.</p>
+    <p>FlyRank's content problem is practical: content teams have more pages than they can inspect carefully. The operational decision is: <strong>which content items deserve scarce review time first?</strong> A useful system should produce a ranked queue, explain why an item surfaced, and leave the final action to a person.</p>
+    <p>On the sealed June test, the learned ranking placed 41 observed declines in the first 50 reviews, compared with 40 for the transparent rule. That modest result does not make the queue an automatic editor; it shows how a time-aware score can direct one additional early review toward an item that later met the study's decline proxy.</p>
     <div class="callout"><strong>Cost of a wrong call.</strong> A false positive wastes review time and may invite an unnecessary edit. A false negative may delay attention to a genuine decline. The score therefore prioritizes investigation—not rewriting, merging, pruning, or deleting automatically.</div>
   </section>
   <section id="data">

@@ -1,0 +1,68 @@
+{
+  "lane": "Refresh / Content Opportunity Scoring",
+  "queue_rows": 10730,
+  "candidate_definition": "impressions_90d >= 300; 0 < avg_position <= 20; ctr < 0.50 percentage points",
+  "scoring_design": "5-fold GroupKFold out-of-fold by pseudonymized client_id",
+  "fold_receipts": [
+    {
+      "fold": 1,
+      "train_rows": 6615,
+      "test_rows": 4115,
+      "test_clients": 1,
+      "client_overlap": 0
+    },
+    {
+      "fold": 2,
+      "train_rows": 9082,
+      "test_rows": 1648,
+      "test_clients": 6,
+      "client_overlap": 0
+    },
+    {
+      "fold": 3,
+      "train_rows": 9083,
+      "test_rows": 1647,
+      "test_clients": 7,
+      "client_overlap": 0
+    },
+    {
+      "fold": 4,
+      "train_rows": 9082,
+      "test_rows": 1648,
+      "test_clients": 8,
+      "client_overlap": 0
+    },
+    {
+      "fold": 5,
+      "train_rows": 9058,
+      "test_rows": 1672,
+      "test_clients": 6,
+      "client_overlap": 0
+    }
+  ],
+  "random_seed": 42,
+  "oof_base_rate": 0.6354147250698975,
+  "oof_roc_auc": 0.6348158309443126,
+  "oof_average_precision": 0.7401247343219346,
+  "oof_precision_at_50": 0.82,
+  "week6_grouped_holdout_precision_at_50": 0.78,
+  "week4_baseline_precision_at_50": 0.74,
+  "action_counts": {
+    "Thin + visible": 547,
+    "Mature + stale": 1772,
+    "Striking-distance low CTR": 3430,
+    "Page-one low CTR": 4981
+  },
+  "reason_codes": [
+    "mature_stale_visible",
+    "page1_low_ctr",
+    "striking_low_ctr",
+    "thin_visible_gap"
+  ],
+  "queue_export": "work/outputs/ranked_action_queue.csv (gitignored; regenerate)",
+  "figure_export": "work/figures/w07_action_mix.png",
+  "claim_scope": "observed, measured, directional, human-reviewed decision-support",
+  "no_automation": true,
+  "python_version": "3.9.6",
+  "sklearn_version": "1.6.1"
+}

@@ -1,0 +1,68 @@
+{
+  "lane": "Refresh / Content Opportunity Scoring",
+  "target_proxy": "trend_direction == down (outcome only)",
+  "split": "75/25 GroupShuffleSplit by pseudonymized client_id",
+  "random_seed": 42,
+  "train_rows": 9029,
+  "test_rows": 1701,
+  "train_clients": 21,
+  "test_clients": 7,
+  "primary_metric": "precision_at_50",
+  "comparison": [
+    {
+      "method": "Base rate (no ranking)",
+      "precision_at_10": 0.554,
+      "precision_at_50": 0.554,
+      "precision_at_100": 0.554,
+      "roc_auc": 0.5,
+      "average_precision": 0.554
+    },
+    {
+      "method": "Week-4 fixed rule",
+      "precision_at_10": 0.5,
+      "precision_at_50": 0.74,
+      "precision_at_100": 0.76,
+      "roc_auc": 0.554,
+      "average_precision": 0.61
+    },
+    {
+      "method": "Random Forest",
+      "precision_at_10": 1.0,
+      "precision_at_50": 0.78,
+      "precision_at_100": 0.8,
+      "roc_auc": 0.639,
+      "average_precision": 0.68
+    }
+  ],
+  "top_features_by_permutation_auc_drop": [
+    "avg_position",
+    "days_with_sessions",
+    "sessions_90d",
+    "clicks_90d",
+    "ctr"
+  ],
+  "feature_columns": [
+    "search_volume",
+    "competition",
+    "cpc",
+    "word_count",
+    "content_age_days",
+    "days_since_last_update",
+    "impressions_90d",
+    "clicks_90d",
+    "sessions_90d",
+    "days_with_impressions",
+    "days_with_sessions",
+    "ctr",
+    "avg_position",
+    "engagement_rate",
+    "content_type",
+    "main_intent",
+    "competition_level",
+    "freshness_tier"
+  ],
+  "forbidden_feature_overlap": [],
+  "python_version": "3.9.6",
+  "sklearn_version": "1.6.1",
+  "limitation": "One trailing-window snapshot; grouped client holdout is not a non-overlapping future validation."
+}

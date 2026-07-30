@@ -1,0 +1,20 @@
+{
+  "lane": "Refresh / Content Opportunity Scoring",
+  "data": "starter snapshot: one row per pseudonymized content item",
+  "rule": "visible positions 1-20, impressions >= 300, CTR < 0.50%; rank by exposure-weighted CTR gap",
+  "eligible_rows": 10730,
+  "base_rate": 0.5420666666666667,
+  "precision_at_10": 0.5,
+  "precision_at_50": 0.7,
+  "reason_code": "visible_low_ctr_for_position",
+  "action_label": "review_title_meta_and_intent",
+  "score_inputs": [
+    "impressions_90d",
+    "ctr",
+    "avg_position"
+  ],
+  "excluded_label_fields": [
+    "trend_direction",
+    "trend_pct"
+  ]
+}
